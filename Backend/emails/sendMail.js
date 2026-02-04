@@ -1,0 +1,516 @@
+import { sendMail } from "./mailer.js";
+
+// ✅ Verification Mail
+export const sendVerificationMail = (to, token) => {
+  const verificationUrl = `${process.env.client_url}/user/verify/${token}`;
+
+  const html = `
+    <div style="
+      font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+      background-color: #f5f7fa;
+      padding: 40px 20px;
+      text-align: center;
+    ">
+      <div style="
+        max-width: 600px;
+        margin: auto;
+        background-color: #ffffff;
+        padding: 40px 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        border: 1px solid #eaeaea;
+      ">
+        <img 
+          src="https://res.cloudinary.com/do9m8kc0b/image/upload/v1760161496/esftuk6irpikvltmbevx.png" 
+          alt="ApnaBazaar" 
+          style="width: 140px; margin-bottom: 25px;"
+        />
+        <h2 style="
+          color: #2d3748;
+          font-size: 22px;
+          margin-bottom: 10px;
+        ">Verify Your Email</h2>
+
+        <p style="
+          color: #4a5568;
+          font-size: 15px;
+          line-height: 1.6;
+          margin: 0 0 25px;
+        ">
+          Thanks for joining <strong>ApnaBazaar</strong>!  
+          Click the button below to verify your account and get started.
+        </p>
+
+        <a href="${verificationUrl}" style="
+          display: inline-block;
+          padding: 12px 28px;
+          background-color: #2563eb;
+          color: #ffffff;
+          text-decoration: none;
+          border-radius: 6px;
+          font-weight: 600;
+          font-size: 15px;
+          transition: background-color 0.3s ease;
+        ">Verify Email</a>
+
+        <p style="
+          color: #718096;
+          font-size: 13px;
+          margin-top: 25px;
+          line-height: 1.4;
+        ">
+          If the button doesn’t work, copy and paste this link into your browser:
+        </p>
+
+        <a href="${verificationUrl}" style="
+          color: #2563eb;
+          font-size: 13px;
+          word-break: break-all;
+          text-decoration: none;
+        ">"${verificationUrl}"</a>
+
+        <hr style="
+          border: none;
+          border-top: 1px solid #e2e8f0;
+          margin: 30px 0;
+        " />
+
+        <p style="
+          color: #a0aec0;
+          font-size: 12px;
+          margin: 0;
+        ">
+          This verification link is valid for <strong>15 minutes</strong>.
+        </p>
+      </div>
+
+      <p style="
+        color: #a0aec0;
+        font-size: 12px;
+        margin-top: 20px;
+      ">
+        © 2025 ApnaBazaar. All rights reserved.
+      </p>
+    </div>
+  `;
+
+  return sendMail({ to, subject: "Verify Your Email", html });
+};
+
+
+// ✅ Order Confirmation
+export const sendOrderConfirmation = (to, name, orderId, items, total) => {
+  const html = `
+    <div style="font-family: Arial, sans-serif; background-color: #f4f4f7; padding: 40px; text-align: center;">
+      <div style="max-width: 600px; margin: auto; background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        <img 
+          src="https://res.cloudinary.com/do9m8kc0b/image/upload/v1760161496/esftuk6irpikvltmbevx.png" 
+          alt="ApnaBazaar" 
+          style="width: 140px; margin-bottom: 25px;"
+        />
+        <h2 style="color: #4a90e2;">Order Confirmed!</h2>
+        <p style="color: #333; font-size: 16px;">Hi <b>${name}</b>, your order <b>${orderId}</b> has been confirmed.</p>
+
+        ${items.map(item => `
+          <div style="display: flex; align-items: center; border: 1px solid #eee; border-radius: 8px; padding: 10px; margin: 15px 0; text-align: left;">
+            <img src="${item?.images[0]}" alt="${item.name}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 5px; margin-right: 15px;" />
+            <div style="flex: 1;">
+              <p style="margin: 0; font-weight: bold; font-size: 14px; color: #333;">${item.name}</p>
+              <p style="margin: 5px 0 0 0; color: #555; font-size: 13px;">Quantity: ${item.quantity}</p>
+            </div>
+            <p style="margin: 0; font-weight: bold; color: #4a90e2;">₹${item.price}</p>
+          </div>
+        `).join("")}
+
+        <p style="font-size: 16px; margin-top: 20px;"><b>Total:</b> ₹${total}</p>
+        <p style="color: #999; font-size: 12px; margin-top: 20px;">Thank you for shopping with us!</p>
+      </div>
+    </div>
+  `;
+
+  return sendMail({ to, subject: "Order Confirmation", html });
+};
+
+export const sendOrderToVendor = (to, vendorName, orderId, items, shippingAddress, buyerName) => {
+  const html = `
+    <div style="font-family: Arial, sans-serif; background-color: #f4f4f7; padding: 40px; text-align: center;">
+      <div style="max-width: 600px; margin: auto; background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        <img 
+          src="https://res.cloudinary.com/do9m8kc0b/image/upload/v1760161496/esftuk6irpikvltmbevx.png" 
+          alt="ApnaBazaar" 
+          style="width: 140px; margin-bottom: 25px;"
+        />
+
+        <h2 style="color: #4a90e2;">🛒 New Order Received!</h2>
+        <p style="color: #333; font-size: 16px;">Hi <b>${vendorName}</b>, you’ve received a new order <b>#${orderId}</b>.</p>
+        <p style="color: #666; font-size: 14px;">Please prepare the following items for shipment:</p>
+
+        ${items.map(item => `
+          <div style="display: flex; align-items: center; border: 1px solid #eee; border-radius: 8px; padding: 10px; margin: 15px 0; text-align: left;">
+            <img src="${item?.images?.[0] || ''}" alt="${item.name}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 5px; margin-right: 15px;" />
+            <div style="flex: 1;">
+              <p style="margin: 0; font-weight: bold; font-size: 14px; color: #333;">${item.name}</p>
+              <p style="margin: 5px 0 0 0; color: #555; font-size: 13px;">Quantity: ${item.quantity}</p>
+              <p style="margin: 2px 0 0 0; color: #4a90e2; font-size: 13px;">Price: ₹${item.price}</p>
+            </div>
+          </div>
+        `).join("")}
+
+        <h3 style="color: #4a90e2; margin-top: 30px;">📦 Shipping Details</h3>
+        <div style="text-align: left; font-size: 14px; color: #444; margin: 10px 0 20px 0;">
+          <p><b>Customer:</b> ${buyerName}</p>
+          <p><b>Name:</b> ${shippingAddress?.name}</p>
+          <p><b>Email:</b> ${shippingAddress?.email}</p>
+          <p><b>Phone:</b> ${shippingAddress?.phone}</p>
+          <p><b>Address:</b> ${shippingAddress?.street}, ${shippingAddress?.city}, ${shippingAddress?.state} - ${shippingAddress?.zipcode}</p>
+        </div>
+
+        <p style="color: #999; font-size: 12px; margin-top: 20px;">
+          Please process and dispatch the order at your earliest convenience.<br/>
+          Thank you for partnering with <b>ApnaBazaar</b> 💛
+        </p>
+      </div>
+    </div>
+  `;
+
+  return sendMail({
+    to,
+    subject: `New Order #${orderId} - Please Process`,
+    html
+  });
+};
+
+// ✅ Order Status Update
+export const sendOrderStatusMail = (to, name, orderId, status) => {
+  const html = `
+    <div style="font-family: Arial, sans-serif; background-color: #f4f4f7; padding: 40px; text-align: center;">
+      <div style="max-width: 600px; margin: auto; background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        <img 
+          src="https://res.cloudinary.com/do9m8kc0b/image/upload/v1760161496/esftuk6irpikvltmbevx.png" 
+          alt="ApnaBazaar" 
+          style="width: 140px; margin-bottom: 25px;"
+        />
+        <h2 style="color: #4a90e2;">Order Update</h2>
+        <p style="color: #333; font-size: 16px;">Hi <b>${name}</b>, your order <b>${orderId}</b> is now <b style="color:#27ae60;">${status}</b>.</p>
+        <p style="color: #999; font-size: 12px; margin-top: 20px;">Thank you for shopping with us!</p>
+      </div>
+    </div>
+  `;
+  return sendMail({ to, subject: `Order ${status}`, html });
+};
+
+// ✅ Order Canceled
+export const sendCancelMail = (to, name, orderId) => {
+  const html = `
+    <div style="font-family: Arial, sans-serif; background-color: #f4f4f7; padding: 40px; text-align: center;">
+      <div style="max-width: 600px; margin: auto; background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        <img 
+          src="https://res.cloudinary.com/do9m8kc0b/image/upload/v1760161496/esftuk6irpikvltmbevx.png" 
+          alt="ApnaBazaar" 
+          style="width: 140px; margin-bottom: 25px;"
+        />
+        <h2 style="color: #e74c3c;">Order Canceled</h2>
+        <p style="color: #333; font-size: 16px;">Hi <b>${name}</b>, we regret to inform you that your order <b>${orderId}</b> has been canceled.</p>
+        <p style="color: #999; font-size: 12px; margin-top: 20px;">If you have any questions, please contact our support.</p>
+      </div>
+    </div>
+  `;
+  return sendMail({ to, subject: "Order Canceled", html });
+};
+
+// ✅ vendor Application
+export const sendVendorApplicationMail = (to, userName, email) => {
+  const html = `
+    <div style="font-family: Arial, sans-serif; background-color: #f4f4f7; padding: 40px; text-align: center;">
+      <div style="max-width: 600px; margin: auto; background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        <img 
+          src="https://res.cloudinary.com/do9m8kc0b/image/upload/v1760161496/esftuk6irpikvltmbevx.png" 
+          alt="ApnaBazaar" 
+          style="width: 140px; margin-bottom: 25px;"
+        />
+        <h2 style="color: #4a90e2;">New Vendor Application</h2>
+        <p style="color: #333; font-size: 16px;">Hi Admin,</p>
+        <p style="color: #333; font-size: 16px;">
+          <b>${userName}</b> has applied to become a vendor on your platform.
+        </p>
+        <p style="color: #333; font-size: 14px;">
+          Email: <b>${email}</b>
+        </p>
+        <p style="color: #999; font-size: 12px; margin-top: 20px;">
+          Please review the application in the admin panel.
+        </p>
+      </div>
+    </div>
+  `;
+  return sendMail({ to, subject: "New Vendor Application", html });
+};
+
+// ✅ vendor Application Approve Mail
+export const sendVendorApprovalMail = (to, userName) => {
+  const html = `
+    <div style="font-family: Arial, sans-serif; background-color: #f4f4f7; padding: 40px; text-align: center;">
+      <div style="max-width: 600px; margin: auto; background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        <img 
+          src="https://res.cloudinary.com/do9m8kc0b/image/upload/v1760161496/esftuk6irpikvltmbevx.png" 
+          alt="ApnaBazaar" 
+          style="width: 140px; margin-bottom: 25px;"
+        />
+        <h2 style="color: #27ae60;">Vendor Application Approved!</h2>
+        <p style="color: #333; font-size: 16px;">Hi <b>${userName}</b>,</p>
+        <p style="color: #333; font-size: 16px;">
+          Congratulations! Your application to become a vendor has been approved.
+        </p>
+        <p style="color: #333; font-size: 14px;">
+          You can now log in to your vendor dashboard and start listing your products.
+        </p>
+        <a href=${process.env.client_url}/signin" style="
+          display: inline-block;
+          margin: 20px 0;
+          padding: 12px 25px;
+          background-color: #27ae60;
+          color: #fff;
+          text-decoration: none;
+          border-radius: 5px;
+          font-weight: bold;
+        ">Go to Vendor Dashboard</a>
+        <p style="color: #999; font-size: 12px; margin-top: 20px;">
+          Welcome to our vendor community!
+        </p>
+      </div>
+    </div>
+  `;
+  return sendMail({ to, subject: "Vendor Application Approved", html });
+};
+
+
+export const sendCustomerQueryMail = (to, name, category, subject, message) => {
+  const html = `
+    <div style="font-family: Arial, sans-serif; background-color: #f4f4f7; padding: 40px; text-align: center;">
+      <div style="max-width: 600px; margin: auto; background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        <img 
+          src="https://res.cloudinary.com/do9m8kc0b/image/upload/v1760161496/esftuk6irpikvltmbevx.png" 
+          alt="ApnaBazaar" 
+          style="width: 140px; margin-bottom: 25px;"
+        />
+        
+        <h2 style="color: #27ae60;">New Customer Query Received</h2>
+        <p style="color: #333; font-size: 16px;">Hello ApnaBazaar Team,</p>
+        <p style="color: #333; font-size: 15px;">
+          You have received a new query from <b>${name}</b> via the Contact Us form.
+        </p>
+
+        <div style="text-align: left; margin: 25px auto; background: #f9f9f9; padding: 20px; border-radius: 8px;">
+          <p><b>Category:</b> ${category}</p>
+          <p><b>Subject:</b> ${subject}</p>
+          <p><b>Message:</b></p>
+          <p style="white-space: pre-line; border-left: 3px solid #27ae60; padding-left: 10px; color: #555;">
+            ${message}
+          </p>
+        </div>
+
+        <p style="color: #555; font-size: 14px;">Please respond to this query at your earliest convenience.</p>
+
+        <a href="mailto:${to}" style="
+          display: inline-block;
+          margin: 20px 0;
+          padding: 12px 25px;
+          background-color: #27ae60;
+          color: #fff;
+          text-decoration: none;
+          border-radius: 5px;
+          font-weight: bold;
+        ">Reply to ${name}</a>
+
+        <p style="color: #999; font-size: 12px; margin-top: 20px;">
+          This is an automated message from ApnaBazaar.
+        </p>
+      </div>
+    </div>
+  `;
+
+  return sendMail({
+    to,
+    subject: `New Customer Query: ${subject}`,
+    html,
+  });
+};
+
+export const sendCancelledOrderMail = (to, name, orderId, reason, refundStatus) => {
+  const html = `
+    <div style="font-family: Arial, sans-serif; background-color: #f4f4f7; padding: 40px; text-align: center;">
+      <div style="max-width: 600px; margin: auto; background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        
+        <img 
+          src="https://res.cloudinary.com/do9m8kc0b/image/upload/v1760161496/esftuk6irpikvltmbevx.png" 
+          alt="ApnaBazaar" 
+          style="width: 140px; margin-bottom: 25px;"
+        />
+
+        <h2 style="color: #e74c3c;">Order Cancelled</h2>
+        <p style="color: #333; font-size: 16px;">Dear ${name},</p>
+
+        <p style="color: #333; font-size: 15px;">
+          We’re writing to inform you that your order <b>#${orderId}</b> has been <b>cancelled</b>.
+        </p>
+
+        <div style="text-align: left; margin: 25px auto; background: #f9f9f9; padding: 20px; border-radius: 8px;">
+          <p><b>Reason for Cancellation:</b></p>
+          <p style="white-space: pre-line; border-left: 3px solid #e74c3c; padding-left: 10px; color: #555;">
+            ${reason || "No specific reason provided."}
+          </p>
+
+          <p style="margin-top: 15px;"><b>Refund Status:</b> ${refundStatus || "Pending"}</p>
+        </div>
+
+        <p style="color: #555; font-size: 15px;">
+          If your payment was already processed, any applicable refund will be issued within <b>5–7 business days</b>.
+        </p>
+
+        <a href="https://apnabazaar.com/orders/${orderId}" style="
+          display: inline-block;
+          margin: 20px 0;
+          padding: 12px 25px;
+          background-color: #e74c3c;
+          color: #fff;
+          text-decoration: none;
+          border-radius: 5px;
+          font-weight: bold;
+        ">View Order Details</a>
+
+        <p style="color: #999; font-size: 13px; margin-top: 20px;">
+          Need help? Contact our support team at 
+          <a href="mailto:support@apnabazaar.com" style="color: #27ae60;">support@apnabazaar.com</a>.
+        </p>
+
+        <p style="color: #999; font-size: 12px; margin-top: 20px;">
+          This is an automated message from ApnaBazaar. Please do not reply directly to this email.
+        </p>
+      </div>
+    </div>
+  `;
+
+  return sendMail({
+    to,
+    subject: `Order #${orderId} Cancelled`,
+    html,
+  });
+};
+
+export const sendForgotPasswordEmail = (to, name, resetLink) => {
+  const html = `
+    <div style="font-family: Arial, sans-serif; background-color: #f4f4f7; padding: 40px; text-align: center;">
+      <div style="max-width: 600px; margin: auto; background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        
+        <img 
+          src="https://res.cloudinary.com/do9m8kc0b/image/upload/v1760161496/esftuk6irpikvltmbevx.png" 
+          alt="ApnaBazaar" 
+          style="width: 140px; margin-bottom: 25px;"
+        />
+
+        <h2 style="color: #0f172a;">Reset Your Password</h2>
+        <p style="color: #333; font-size: 16px;">Dear ${name || "User"},</p>
+
+        <p style="color: #333; font-size: 15px;">
+          We received a request to reset the password for your ApnaBazaar account.
+          If you made this request, please click the button below to set a new password.
+        </p>
+
+        <a href="${resetLink}" target="_blank" style="
+          display: inline-block;
+          margin: 25px 0;
+          padding: 12px 25px;
+          background-color: #0f172a;
+          color: #fff;
+          text-decoration: none;
+          border-radius: 5px;
+          font-weight: bold;
+        ">Reset Password</a>
+
+        <div style="text-align: left; background: #f9f9f9; padding: 20px; border-radius: 8px; margin-top: 20px;">
+          <p style="font-size: 14px; color: #555;">
+            🔒 <b>Security Notice:</b><br>
+            For your protection, this link will expire in <b>15 minutes</b>.
+            If you didn’t request a password reset, you can safely ignore this email — your password will remain unchanged.
+          </p>
+        </div>
+
+        <p style="color: #555; font-size: 15px; margin-top: 25px;">
+          If you continue to experience issues, please reach out to our support team.
+        </p>
+
+        <p style="color: #999; font-size: 13px; margin-top: 20px;">
+          Need help? Contact us at 
+          <a href="mailto:support@apnabazaar.com" style="color: #0f172a;">support@apnabazaar.com</a>.
+        </p>
+
+        <p style="color: #999; font-size: 12px; margin-top: 20px;">
+          This is an automated message from ApnaBazaar. Please do not reply directly to this email.
+        </p>
+      </div>
+    </div>
+  `;
+
+  return sendMail({
+    to,
+    subject: "Reset Your Password - ApnaBazaar",
+    html,
+  });
+};
+
+export const sendPasswordResetSuccessMail = (to, name) => {
+  const html = `
+    <div style="font-family: 'Segoe UI', Arial, sans-serif; background-color: #f4f4f7; padding: 40px; text-align: center;">
+      <div style="max-width: 600px; margin: auto; background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+
+        <img 
+          src="https://res.cloudinary.com/do9m8kc0b/image/upload/v1760161496/esftuk6irpikvltmbevx.png" 
+          alt="ApnaBazaar" 
+          style="width: 140px; margin-bottom: 25px;"
+        />
+
+        <h2 style="color: #16a34a;">Password Changed Successfully</h2>
+        <p style="color: #333; font-size: 16px;">Hello ${name},</p>
+
+        <p style="color: #444; font-size: 15px;">
+          This is a confirmation that your password for your <b>ApnaBazaar</b> account has been successfully reset.
+        </p>
+
+        <div style="text-align: left; margin: 25px auto; background: #f9f9f9; padding: 20px; border-radius: 8px;">
+          <p style="font-size: 14px; color: #555;">
+            If you did not request this change, please <b>reset your password immediately</b> or contact our support team.
+          </p>
+        </div>
+
+        <a href="https://apnabazaar.com/signin" style="
+          display: inline-block;
+          margin: 20px 0;
+          padding: 12px 25px;
+          background-color: #16a34a;
+          color: #fff;
+          text-decoration: none;
+          border-radius: 5px;
+          font-weight: bold;
+        ">Go to Login</a>
+
+        <p style="color: #777; font-size: 14px; margin-top: 20px;">
+          For your security, we recommend not sharing your password with anyone.
+        </p>
+
+        <p style="color: #999; font-size: 13px; margin-top: 20px;">
+          Need help? Contact our support team at 
+          <a href="mailto:support@apnabazaar.com" style="color: #27ae60;">support@apnabazaar.com</a>.
+        </p>
+
+        <p style="color: #999; font-size: 12px; margin-top: 20px;">
+          This is an automated message from ApnaBazaar. Please do not reply directly to this email.
+        </p>
+      </div>
+    </div>
+  `;
+
+  return sendMail({
+    to,
+    subject: "Your Password Has Been Reset - ApnaBazaar",
+    html,
+  });
+};
